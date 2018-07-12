@@ -18,44 +18,47 @@ def index_in_sublist(i,lst):
         if i in lst[j]:
             return j
 
-def shift_braid(b,k):
-    return [ sign(s)*(abs(s)+k) for s in b.Tietze()]
+def shift_braid(Bg,b,k):
+    return Bg([ sign(s)*(abs(s)+k) for s in b.Tietze()])
 
 def thicken_crossing(i,n,m):
     # only use positive i, just invert after placing in braid
     return [j for k in range(i,i+m) for j in range(k+n-1,k-1,-1)]
 
+def populate_list(n,braids,components):
+    lst = []
+    offset=1
+    
+    for i in range(1,n+1):
+        j = index_in_sublist(i,components)
+        if i == comps[j][0]:
+            lst.append((others[j],offset))
+        else:
+            lst.append((BraidGroup((others[j].strands()))([]),offset))
+        offset += others[j].strands()
+        
+    return lst
+
+def sorted_braid_components(braid):
+    return sorted([list(comp) for comp in braid.permutation().to_cycles()],key =lambda x: x[0])
+
 def immerse_braids(braid,others):
-    comps = sorted([list(comp) for comp in braid.permutation().to_cycles()],key= lambda x: x[0])
+    comps = sorted_braid_components(braid)
     
     n = sum([others[i].strands() * len(comps[i]) for i in range(len(comps))])
     B = BraidGroup(n)
 
-    offset = 1
-    comp_starts = []
-    for i in range(1,len(others)+1):
-        j = index_in_sublist(i,comps)
-        if i == comps[j][0]:
-            comp_starts.append(offset)
-        offset += others[j].strands()
-        
-    in_place_braids = []
-    j=0
-    for i in range(n):
-       if j < len(comp_starts) and i+1 == comp_starts[j]:
-           in_place_braids.append(B(shift_braid(others[j],i)))
-           j += 1
-    
-    b = prod(in_place_braids)
+    other_locs = populate_list(braid.strands(),others,comps)
+
+    colored = prod([shift_braid(B,b,loc-1) for (b,loc) in other_locs])
 
     for x in braid.Tietze():
-        # setup thicken_crossing with correct i, n, and m
-        # find a way to remember where everything lands
-        # multiply b on the right
-        # don't worry about matching the numbers since it will end up lining up with another cycle
-        # if done correctly
-
-    return b
+        colored *= B(thicken_crossing(other_locs[x-1][1],other_locs[x-1][0].strands(),other_locs[x][0].strands()))
+        i,j = index_in_sublist(x,comps),index_in_sublist(x+1,comps)
+        others[j],others[i] = others[i],others[j]
+        other_locs = populate_list(braid.strands(),others,comps)
+        
+    return colored
 
 def I(A,M):
     raise NotImplementedError
