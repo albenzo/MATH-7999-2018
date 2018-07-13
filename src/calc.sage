@@ -34,7 +34,7 @@ def populate_list(n,braids,components):
         if i == components[j][0]:
             lst.append((braids[j],offset))
         else:
-            lst.append((BraidGroup((others[j].strands()))([]),offset))
+            lst.append((BraidGroup((braids[j].strands()))([]),offset))
         offset += braids[j].strands()
         
     return lst
