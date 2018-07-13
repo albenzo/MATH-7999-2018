@@ -21,9 +21,9 @@ def index_in_sublist(i,lst):
 def shift_braid(Bg,b,k):
     return Bg([ sign(s)*(abs(s)+k) for s in b.Tietze()])
 
-def thicken_crossing(i,n,m):
+def thicken_crossing(Bg,i,n,m):
     # only use positive i, just invert after placing in braid
-    return [j for k in range(i,i+m) for j in range(k+n-1,k-1,-1)]
+    return Bg([j for k in range(i,i+m) for j in range(k+n-1,k-1,-1)])
 
 def populate_list(n,braids,components):
     lst = []
@@ -31,11 +31,11 @@ def populate_list(n,braids,components):
     
     for i in range(1,n+1):
         j = index_in_sublist(i,components)
-        if i == comps[j][0]:
-            lst.append((others[j],offset))
+        if i == components[j][0]:
+            lst.append((braids[j],offset))
         else:
             lst.append((BraidGroup((others[j].strands()))([]),offset))
-        offset += others[j].strands()
+        offset += braids[j].strands()
         
     return lst
 
@@ -44,6 +44,9 @@ def sorted_braid_components(braid):
 
 def immerse_braids(braid,others):
     comps = sorted_braid_components(braid)
+
+    if len(others) != len(comps):
+        raise ValueError('must supply an equal number of braids as components')
     
     n = sum([others[i].strands() * len(comps[i]) for i in range(len(comps))])
     B = BraidGroup(n)
@@ -53,7 +56,7 @@ def immerse_braids(braid,others):
     colored = prod([shift_braid(B,b,loc-1) for (b,loc) in other_locs])
 
     for x in braid.Tietze():
-        colored *= B(thicken_crossing(other_locs[x-1][1],other_locs[x-1][0].strands(),other_locs[x][0].strands()))
+        colored *= thicken_crossing(B,other_locs[x-1][1],other_locs[x-1][0].strands(),other_locs[x][0].strands())
         i,j = index_in_sublist(x,comps),index_in_sublist(x+1,comps)
         others[j],others[i] = others[i],others[j]
         other_locs = populate_list(braid.strands(),others,comps)
