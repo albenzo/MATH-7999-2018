@@ -22,8 +22,7 @@ def shift_braid(Bg,b,k):
     return Bg([ sign(s)*(abs(s)+k) for s in b.Tietze()])
 
 def thicken_crossing(Bg,i,n,m):
-    # only use positive i, just invert after placing in braid
-    return Bg([j for k in range(i,i+m) for j in range(k+n-1,k-1,-1)])
+    return Bg([j for k in range(abs(i),abs(i)+m) for j in range(k+n-1,k-1,-1)])^(sign(i))
 
 def populate_list(n,braids,components):
     lst = []
@@ -62,6 +61,9 @@ def immerse_braids(braid,others):
         other_locs = populate_list(braid.strands(),others,comps)
         
     return colored
+
+def satellization(A,L, others):
+    return NotImplementedError
 
 def I(A,M):
     raise NotImplementedError
