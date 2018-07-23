@@ -7,11 +7,16 @@ U_neg = Knot(B([-1]))
 def chebychev_poly(a,n):
     return (-1)^(n)*(a^(2*(n+1))-a^(-2*(n+1)))/(a^2-a^(-2))
 
-def s_n(a):
+def jones_wenzel(a,n):
+    R = a.parent()
+
     raise NotImplementedError
 
+def s_n(a,n):
+    return chebychev_poly(a,n)*jones_wenzel(a,n)
+
 def omega(a,r):
-    return sum([chebychev_poly(a,n)*s_n(a) for n in range(r-2)])
+    return sum([s_n(a) for n in range(r-2)])
 
 def index_in_sublist(i,lst):
     for j in range(len(lst)):
